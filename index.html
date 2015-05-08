@@ -1,0 +1,530 @@
+﻿<html>
+<head>
+<!-- TnTonly Javascript Calculator version 0.8 -->
+<!--   © Copyright Trịnh Thành Trung - 2008    -->
+    <title>TnTonly HTML Calculator - Copyright by Trinh Thanh Trung 2008. Allrights reserved</title>
+    <style type="text/css">
+	<!--
+	body {
+	background-color: #333333;
+	}
+	body,td,th {
+	color: #CCCCCC;
+	}
+    .style1 {font-family: "Lucida Console", Courier, monospace;
+        height: 26px;
+		font-weight: bold;
+    }
+    .style3 {font-family: "Lucida Console", Courier, monospace;
+        height: 26px;
+		font-size: small;
+    }
+	.style2 {
+	font-family: Arial, Helvetica, sans-serif;
+	}
+	.style4 {font-size: smaller;
+	font-family: Arial, Helvetica, sans-serif;} 
+a:link {
+	color: #0099FF;
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+	color: #FF9900;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+	-->
+	</style>
+	
+<script language="javascript" type="text/javascript">
+// <!CDATA[
+
+// Đoạn mã được chuyển đổi từ phiên bản TNTCalc viết bằng Visual Basic
+// © Copyright Trịnh Thành Trung - 2007
+// Tool used: Macromedia Dreamweaver 8, Microsoft Visual Web Developer 2008 Express
+
+// Biến lưu giữ kết quả trước khi thực hiện phép tính
+// trước khi thực hiện phép nhân hoặc chia
+// Phần tử FinalResult lưu lại kết quả phép tính
+// Phần tử QueryResult lưu lại phép toán đang đợi thực hiện
+var FinalResult = "0"; //FirstResult[1]
+var OperatorResult = "+"; //FirstResult[2]
+// Biến lưu giữ kết quả của phép nhân và chia
+// Tương tự, có 2 phần tử để lưu dấu và kết quả
+var FinalGroupResult = "0"; //LastResult[1]
+var OperatorGroupResult = ""; //LastResult[2]
+// Biến kiểm tra xem có đang bắt đầu thực hiện một phép tính mới không
+var isNewOperation = true;
+// Biến nhớ
+var Memory = "0";
+// Biến kiểm tra trạng thái MR
+// (nếu bạn vừa ấn MR mà ấn thêm một lần nữa thì Memory được xóa)
+var MemorySwitch = false;
+
+function Initialize() {
+    FinalResult= "0";
+    OperatorResult = "+";
+    FinalGroupResult = "0";
+    isNewOperation = true;
+}
+
+function Calculate(Value1, Value2, Operation) {
+    var Result = "0";
+    if (Operation == "+")
+    {
+        Result = (eval(Value1) + eval(Value2)) + '';
+    }
+    else if (Operation == "-")
+    {
+        Result = (eval(Value1) - eval(Value2)) + '';
+    }
+    else if (Operation == "*")
+    {
+        Result = (eval(Value1) * eval(Value2)) + '';
+    }
+    else if (Operation == "/")
+    {
+        if (Value2 != "0")
+        {
+            Result = Result = (eval(Value1) / eval(Value2)) + '';
+        }
+        else
+        {
+            //Value2 = 0
+            alert("Division by zero!");
+			isNewOperation = true;
+        }
+    }
+    return Result;
+}
+
+function CalculateNow()
+{
+    // Tính luôn kết quả của phép tính trước
+    if (FinalGroupResult == "0")
+    {
+        // Nếu không có phép tính nhân chia nào đang được thực hiện, 
+        // máy sẽ tính trực tiếp với số đang hiển thị trên màn hình
+        FinalGroupResult = document.CalcForm.txtResult.value;
+    }
+    else
+    {
+        // Nếu có => Tính toán kết quả phép nhân/chia trước, rồi thực hiện với máy
+        FinalGroupResult = Calculate(FinalGroupResult, document.CalcForm.txtResult.value, OperatorGroupResult);
+        // tương tự phép +,-
+    }
+    document.CalcForm.txtResult.value = Calculate(FinalResult, FinalGroupResult, OperatorResult);
+    // Lưu giá trị vừa tính được vào FirstResult
+    FinalResult = "0";
+    FinalGroupResult = "0";
+}
+
+function Execute(Operation)
+{
+if ((Operation == "+") || (Operation == "-"))
+{
+    // Nếu chưa có phép tính nào trước đó thì tạo ra FirstResult mới
+    if (((FinalResult == "0") & (FinalGroupResult == "0")))
+    {
+        //Chưa có phép toán nào được thực hiện
+        FinalResult = document.CalcForm.txtResult.value;
+    }
+    else
+    {
+        // Tính luôn kết quả của phép tính trước đó
+        CalculateNow();
+        // Gán giá trị trên màn hình vào FirstResult[1] để tiếp tục tính
+        FinalResult = document.CalcForm.txtResult.value;
+    }
+    OperatorResult = Operation;
+}
+else if (((Operation == "*") | (Operation == "/")))
+{
+    // Nếu chưa có LastResult thì tạo ra LastResult mới
+    if ((FinalGroupResult == "0"))
+    {
+        // Lưu giá trị đang được hiển thị trên màn hình vào biến LastResult
+        FinalGroupResult = document.CalcForm.txtResult.value;
+    }
+    else
+    {
+        // LastResult khác 0, tức là trước đó đã tồn tại phép nhân chia đang được tính dở
+        FinalGroupResult = Calculate(FinalGroupResult, document.CalcForm.txtResult.value, OperatorGroupResult);
+        // tương tự phép +,-
+        document.CalcForm.txtResult.value = FinalGroupResult;
+        // Hiển thị kết quả của phép tính nhân hoặc chia lên màn hình
+    }
+    OperatorGroupResult = Operation;
+    //Lưu dấu của phép tính nhân/chia đang tính dở
+}
+else if ((Operation == "="))
+{
+    CalculateNow();
+    // Khởi tạo lại các giá trị
+    OperatorResult = "+";
+}
+isNewOperation = true;
+}
+
+function AddNumber(n)
+{
+    if (isNewOperation == true)
+    {
+        document.CalcForm.txtResult.value = n + '';
+    }
+    else
+    {
+        // NewOperation = False
+        // Thêm một giá trị khi phím số được nhấn
+        if (document.CalcForm.txtResult.value == "0")
+        {
+            // Trên màn hình đang hiển thị '0'
+            document.CalcForm.txtResult.value = n + '';
+        }
+        else
+        {
+            document.CalcForm.txtResult.value = document.CalcForm.txtResult.value + n + '';
+        }
+    }
+    isNewOperation = false;
+}
+
+document.onkeyup = checkKeyPress;  
+function checkKeyPress(e) {
+	var KeyID = (window.event) ? event.keyCode : e.keyCode;
+
+	if (KeyID==13) //Enter keystroke
+	    Execute("=");
+}
+
+function Button1_onclick() {
+    AddNumber(1);
+}
+
+function Button2_onclick() {
+    AddNumber(2);
+}
+
+function Button3_onclick() {
+    AddNumber(3);
+}
+
+function Button4_onclick() {
+    AddNumber(4);
+}
+
+function Button5_onclick() {
+    AddNumber(5);
+}
+
+function Button6_onclick() {
+    AddNumber(6);
+}
+
+function Button7_onclick() {
+    AddNumber(7);
+}
+
+function Button8_onclick() {
+    AddNumber(8);
+}
+
+function Button9_onclick() {
+    AddNumber(9);
+}
+
+function Button0_onclick() {
+    AddNumber(0);
+}
+
+function btnClear_onclick() {
+    document.CalcForm.txtResult.value = "0";
+}
+
+function btnClearEntry_onclick() {
+    document.CalcForm.txtResult.value = "0";
+    Initialize();
+}
+
+function ButtonComma_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    var noOfComma = resultDisplay.indexOf(".");
+    if (noOfComma == -1)
+    {
+		if (resultDisplay == "0")
+			AddNumber("0");
+        document.CalcForm.txtResult.value = document.CalcForm.txtResult.value + ".";
+    }
+}
+
+function btnPlus_onclick() {
+    Execute("+");
+}
+
+function btnSubtract_onclick() {
+    Execute("-");
+}
+
+function btnMultiple_onclick() {
+    Execute("*");
+}
+
+function btnDivide_onclick() {
+    Execute("/");
+}
+
+function btnEqual_onclick() {
+    Execute("=");
+}
+
+function btnBackscape_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    var resultLength = resultDisplay.length;
+    if ((resultLength == 1))
+    {
+        // Dòng hiển thị kết quả chỉ còn 1 ký tự
+        document.CalcForm.txtResult.value = "0";
+    }
+    else
+    {
+        document.CalcForm.txtResult.value = resultDisplay.slice(0,resultLength-1)
+    }
+}
+
+function btnMemory_onclick() {
+    CalculateNow();
+    Memory = eval(Memory) + eval(document.CalcForm.txtResult.value);
+    if (Memory == "0")
+    {
+        document.CalcForm.lblMemoryStatus.value = " ";
+    }
+    else
+    {
+        document.CalcForm.lblMemoryStatus.value = " M ";
+    }
+    isNewOperation = true;
+}
+
+function btnRecall_onclick() {
+    document.CalcForm.txtResult.value = Memory;
+    if (MemorySwitch == true)
+    {
+        Memory = "0";
+        document.CalcForm.lblMemoryStatus.value = " ";
+    }
+    MemorySwitch = true;
+}
+
+function btnRecall_onblur() { // lostfocus(), tại sao lại có cái tên ngu xuẩn này nhỉ???
+    MemorySwitch = false;
+}
+
+function btnNegative_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    if (resultDisplay != "0") {
+        if (resultDisplay.indexOf("-") == -1)
+          document.CalcForm.txtResult.value = "-" + resultDisplay;
+        else
+          document.CalcForm.txtResult.value = (-eval(resultDisplay)) + '';
+    }
+}
+
+function btnSqrt_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = Math.sqrt(eval(resultDisplay));
+    isNewOperation = true;
+}
+
+function btnSqr_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = eval(resultDisplay) * eval(resultDisplay);
+    isNewOperation = true;
+}
+
+function btnSin_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = Math.sin(resultDisplay);
+    isNewOperation = true;
+}
+
+function btnCos_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = Math.cos(resultDisplay);
+    isNewOperation = true;
+}
+
+function btnTan_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = Math.tan(resultDisplay);
+    isNewOperation = true;
+}
+
+function btnRandom_onclick() {
+    document.CalcForm.txtResult.value = Math.random();
+    isNewOperation = true;
+}
+
+function btnPi_onclick() {
+    document.CalcForm.txtResult.value = Math.PI;
+    isNewOperation = true;
+}
+
+function btnEpsilon_onclick() {
+    document.CalcForm.txtResult.value = Math.E;
+    isNewOperation = true;
+}
+
+function btnLog_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = Math.log(resultDisplay);
+    isNewOperation = true;
+}
+
+function btnLn_onclick() {
+    var resultDisplay = document.CalcForm.txtResult.value;
+    document.CalcForm.txtResult.value = Math.log(resultDisplay) / Math.log(Math.E);
+    isNewOperation = true;
+}
+
+// ]]>
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+<body>
+<form name="CalcForm" method="post" action="" style="height: 328px">
+  <table width="750" border="1" align="center">
+    <tr>
+      <td width="300" rowspan="3"><a href="http://tntonly.myftp.org/calc"><img src="leftbanner.jpg" width="300" height="301" border="0"></a></td>
+      <td width="238" height="70"><table width="200" border="0" align="center">
+        <tr>
+          <td colspan="5"><div align="right">
+              <input name="txtResult" type="text" class="style1" id="txtResult" value="0" align="right"/>
+          </div></td>
+        </tr>
+        <tr>
+          <td colspan="2"><div align="right">
+              <input name="lblMemoryStatus" type="text" class="style1" id="lblMemoryStatus" size="3" maxlength="3"/>
+          </div></td>
+          <td><div align="right">
+              <input name="btnBackscape" type="button" class="style1" id="btnBackscape" value="◄" onClick="return btnBackscape_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnClear" type="button" class="style1" id="btnClear" value=" CE " onClick="return btnClear_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnClearEntry" type="button" class="style1" id="btnClearEntry" value=" AC " onClick="return btnClearEntry_onclick()" />
+          </div></td>
+        </tr>
+        <tr>
+          <td><div align="center">
+              <input name="Button1" type="button" class="style1" id="Button1" value=" 1 " onClick="return Button1_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="Button2" type="button" class="style1" id="Button2" value=" 2 " onClick="return Button2_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="Button3" type="button" class="style1" id="Button3" value=" 3 " onClick="return Button3_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnMemory" type="button" class="style1" id="btnMemory" value=" M+ " onClick="return btnMemory_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnRecall" type="button" class="style1" id="btnRecall" value=" MR " onClick="return btnRecall_onclick()" onBlur="return btnRecall_onblur()" />
+          </div></td>
+        </tr>
+        <tr>
+          <td><div align="center">
+              <input name="Button4" type="button" class="style1" id="Button4" value=" 4 " onClick="return Button4_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="Button5" type="button" class="style1" id="Button5" value=" 5 " onClick="return Button5_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="Button6" type="button" class="style1" id="Button6" value=" 6 " onClick="return Button6_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnMultiple" type="button" class="style1" id="btnMultiple" value=" × " onClick="return btnMultiple_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnDivide" type="button" class="style1" id="btnDivide" value=" ÷ " onClick="return btnDivide_onclick()" />
+          </div></td>
+        </tr>
+        <tr>
+          <td><div align="center">
+              <input name="Button7" type="button" class="style1" id="Button7" value=" 7 " onClick="return Button7_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="Button8" type="button" class="style1" id="Button8" value=" 8 " onClick="return Button8_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="Button9" type="button" class="style1" id="Button9" value=" 9 " onClick="return Button9_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnPlus" type="button" class="style1" id="btnPlus" value=" + " onClick="return btnPlus_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnSubtract" type="button" class="style1" id="btnSubtract" value=" - " onClick="return btnSubtract_onclick()" />
+          </div></td>
+        </tr>
+        <tr>
+          <td colspan="2"><div align="center">
+              <input name="Button0" type="button" class="style1" id="Button0" value="   0   " onClick="return Button0_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="ButtonComma" type="button" class="style1" id="ButtonComma" value=" . " onClick="return ButtonComma_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnNegative" type="button" class="style1" id="btnNegative" value=" ± " onClick="return btnNegative_onclick()" />
+          </div></td>
+          <td><div align="center">
+              <input name="btnEqual" type="button" class="style1" id="btnEqual" value=" = " onClick="return btnEqual_onclick()" />
+          </div></td>
+        </tr>
+      </table></td>
+      <td width="190" rowspan="3" valign="top" class="style2"> <p align="right"><strong>TNT HTML 
+          Calculator<br />
+		  <span class="style4">version 0.83 </span></strong></p>
+        <p class="style4"><strong>1. Features </strong><br>
+	      - Simple, fast,efficient, can be run 'on the fly' on your browser<br>
+		  - WYTIWYG (What you type is what you get) For example, you may type '2*(6+3)' and press Enter (or click on [=]) to get your result<br>
+          - Multiple and division priority</p>
+      <p class="style4"><strong>2. Next Update</strong><br>
+	      - Add '(', ')' to get more flexible on calculate priority<br>
+		  - Add more powerful features
+        </p></td>
+    </tr>
+	<br />
+    <tr>
+      <td><div align="center">
+          <input name="btnSqrt" type="button" class="style3" id="btnSqrt" value="√‾" onClick="return btnSqrt_onclick()" />
+          <input name="btnSqr" type="button" class="style3" id="btnSqr" value="x²" onClick="return btnSqr_onclick()" />
+          <input name="btnSin" type="button" class="style3" id="btnSin" value="sin" onClick="return btnSin_onclick()" />
+          <input name="btnCos" type="button" class="style3" id="btnCos" value="cos" onClick="return btnCos_onclick()" />
+          <input name="btnTan" type="button" class="style3" id="btnTan" value="tan" onClick="return btnTan_onclick()" />
+        <br>
+          <input name="btnRandom" type="button" class="style3" id="btnRandom" value="Ran#" onClick="return btnRandom_onclick()" />
+          <input name="btnPi" type="button" class="style3" id="btnPi" value="π" onClick="return btnPi_onclick()" />
+          <input name="btnEpsilon" type="button" class="style3" id="btnEpsilon" value="e" onClick="return btnEpsilon_onclick()" />
+          <input name="btnLog" type="button" class="style3" id="btnLog" value="log" onClick="return btnLog_onclick()" />
+          <input name="btnLn" type="button" class="style3" id="btnLn" value="ln" onClick="return btnLn_onclick()" />
+      </div></td>
+    </tr>
+    <tr>
+      <td><div align="center" class="style2">
+        <strong>TnTonly HTML Calculator</strong><br>
+          <a href="http://tntonly.myftp.org/calc"><span class="style4">http://tntonly.myftp.org/calc</a><br>
+		  <span class="style4">© Trịnh Thành Trung 2008          </span></div></td>
+    </tr>
+  </table>
+  <div align="center" class="style4"> <a href="http://tntonly.myftp.org">Homepage</a> | <a href="http://tntonly.myftp.org/forum">Forum</a> | <a href="http://tntonly.myftp.org/blog">Blog</a> | <a href="http://tntonly.myftp.org/calc">Calculator</a> | <a href="http://getfirefox.com">Get Firefox!</a> </div>
+  <div align="center" class="style2"><p align="center" class="style4">&nbsp;</p>
+    <p align="center" class="style4">Best view with Mozilla Firefox. <a href="http://getfirefox.com">Get it now! </a><br>
+      <a href="http://tntonly.myftp.org"><img src="tnt_logo.png" width="120" height="170" border="0"></a><a href="http://getfirefox.com"><img src="gf1.png" width="195" height="170" border="0"></a></p>
+  </div>
+  </p></form>
+</body>
+</html>
